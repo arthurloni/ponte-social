@@ -2,8 +2,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MapPin, Users, Verified } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface NGOCardProps {
+  id?: number;
   name: string;
   description: string;
   category: string;
@@ -17,6 +19,7 @@ interface NGOCardProps {
 }
 
 const NGOCard = ({ 
+  id = 1,
   name, 
   description, 
   category, 
@@ -28,6 +31,7 @@ const NGOCard = ({
   raised, 
   urgency = 'low' 
 }: NGOCardProps) => {
+  const navigate = useNavigate();
   const progressPercentage = (raised / goal) * 100;
   
   const urgencyColors = {
@@ -40,6 +44,14 @@ const NGOCard = ({
     low: 'Normal',
     medium: 'Urgente',
     high: 'Muito Urgente'
+  };
+
+  const handleDonate = () => {
+    navigate(`/donate/${id}`);
+  };
+
+  const handleViewMore = () => {
+    navigate(`/ngo/${id}`);
   };
 
   return (
@@ -132,10 +144,17 @@ const NGOCard = ({
 
         {/* Actions */}
         <div className="flex gap-2">
-          <Button variant="default" className="flex-1">
+          <Button 
+            variant="default" 
+            className="flex-1"
+            onClick={handleDonate}
+          >
             Doar Agora
           </Button>
-          <Button variant="outline">
+          <Button 
+            variant="outline"
+            onClick={handleViewMore}
+          >
             Ver Mais
           </Button>
         </div>
@@ -145,3 +164,4 @@ const NGOCard = ({
 };
 
 export default NGOCard;
+

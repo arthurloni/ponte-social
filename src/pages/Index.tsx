@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import NGOGrid from "@/components/NGOGrid";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
@@ -8,6 +9,7 @@ const Index = () => {
       <Header />
       <Hero />
       <NGOGrid />
+      <Footer />
     </div>
   );
 };

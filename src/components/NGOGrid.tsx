@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Filter } from "lucide-react";
+import { useState, useMemo } from "react";
+import { getBase64Image } from "@/utils/image-data-final";
 
 // Mock data for demonstration
 const mockNGOs = [
@@ -13,10 +15,11 @@ const mockNGOs = [
     location: "São Paulo, SP",
     verified: true,
     supporters: 1245,
-    image: "/api/placeholder/400/300",
+    image: getBase64Image("Educação"),
     goal: 50000,
     raised: 32000,
-    urgency: 'medium' as const
+    urgency: 'medium' as const,
+    id: 1
   },
   {
     name: "Ação Contra a Fome",
@@ -25,10 +28,11 @@ const mockNGOs = [
     location: "Rio de Janeiro, RJ",
     verified: true,
     supporters: 892,
-    image: "/api/placeholder/400/300",
+    image: getBase64Image("Alimentação"),
     goal: 75000,
     raised: 68000,
-    urgency: 'high' as const
+    urgency: 'high' as const,
+    id: 2
   },
   {
     name: "Verde Esperança",
@@ -37,10 +41,11 @@ const mockNGOs = [
     location: "Minas Gerais, MG",
     verified: true,
     supporters: 567,
-    image: "/api/placeholder/400/300",
+    image: getBase64Image("Meio Ambiente"),
     goal: 30000,
     raised: 15000,
-    urgency: 'low' as const
+    urgency: 'low' as const,
+    id: 3
   },
   {
     name: "Casa do Idoso Feliz",
@@ -49,10 +54,11 @@ const mockNGOs = [
     location: "Brasília, DF",
     verified: true,
     supporters: 423,
-    image: "/api/placeholder/400/300",
+    image: getBase64Image("Assistência Social"),
     goal: 40000,
     raised: 28000,
-    urgency: 'medium' as const
+    urgency: 'medium' as const,
+    id: 4
   },
   {
     name: "Patas Solidárias",
@@ -61,10 +67,11 @@ const mockNGOs = [
     location: "Curitiba, PR",
     verified: true,
     supporters: 756,
-    image: "/api/placeholder/400/300",
+    image: getBase64Image("Animais"),
     goal: 25000,
     raised: 22000,
-    urgency: 'low' as const
+    urgency: 'low' as const,
+    id: 5
   },
   {
     name: "Saúde Para Todos",
@@ -73,14 +80,81 @@ const mockNGOs = [
     location: "Salvador, BA",
     verified: true,
     supporters: 934,
-    image: "/api/placeholder/400/300",
+    image: getBase64Image("Saúde"),
     goal: 60000,
     raised: 45000,
-    urgency: 'high' as const
+    urgency: 'high' as const,
+    id: 6
+  },
+  {
+    name: "Educação Digital Brasil",
+    description: "Programas de inclusão digital e alfabetização tecnológica para crianças e adultos em áreas rurais.",
+    category: "Educação",
+    location: "Manaus, AM",
+    verified: true,
+    supporters: 345,
+    image: getBase64Image("Educação"),
+    goal: 35000,
+    raised: 18000,
+    urgency: 'medium' as const,
+    id: 7
+  },
+  {
+    name: "Água Limpa Para Todos",
+    description: "Construção de poços e sistemas de tratamento de água em comunidades carentes.",
+    category: "Saúde",
+    location: "Fortaleza, CE",
+    verified: true,
+    supporters: 612,
+    image: getBase64Image("Saúde"),
+    goal: 45000,
+    raised: 32000,
+    urgency: 'high' as const,
+    id: 8
+  },
+  {
+    name: "Mulheres Empreendedoras",
+    description: "Capacitação e microcrédito para mulheres que desejam iniciar seus próprios negócios.",
+    category: "Educação",
+    location: "Recife, PE",
+    verified: true,
+    supporters: 523,
+    image: getBase64Image("Educação"),
+    goal: 40000,
+    raised: 28000,
+    urgency: 'low' as const,
+    id: 9
   }
 ];
 
 const NGOGrid = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedLocation, setSelectedLocation] = useState("all");
+  const [displayCount, setDisplayCount] = useState(6);
+
+  // Filter and search NGOs
+  const filteredNGOs = useMemo(() => {
+    return mockNGOs.filter(ngo => {
+      const matchesSearch = 
+        ngo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ngo.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ngo.category.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesCategory = selectedCategory === "all" || ngo.category === selectedCategory;
+      
+      const matchesLocation = selectedLocation === "all" || ngo.location.includes(selectedLocation);
+      
+      return matchesSearch && matchesCategory && matchesLocation;
+    });
+  }, [searchTerm, selectedCategory, selectedLocation]);
+
+  const displayedNGOs = filteredNGOs.slice(0, displayCount);
+  const hasMore = displayCount < filteredNGOs.length;
+
+  const categories = ["all", "Educação", "Saúde", "Alimentação", "Meio Ambiente", "Assistência Social", "Animais"];
+  const locations = ["all", "São Paulo", "Rio de Janeiro", "Minas Gerais", "Brasília", "Curitiba", "Salvador", "Manaus", "Fortaleza", "Recife"];
+
   return (
     <section id="ongs" className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -102,35 +176,41 @@ const NGOGrid = () => {
             <Input 
               placeholder="Buscar ONGs, causas ou localização..." 
               className="pl-10 py-3"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           
-          <Select>
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="md:w-48">
               <SelectValue placeholder="Categoria" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas as Categorias</SelectItem>
-              <SelectItem value="education">Educação</SelectItem>
-              <SelectItem value="health">Saúde</SelectItem>
-              <SelectItem value="environment">Meio Ambiente</SelectItem>
-              <SelectItem value="social">Assistência Social</SelectItem>
-              <SelectItem value="animals">Animais</SelectItem>
-              <SelectItem value="food">Alimentação</SelectItem>
+              <SelectItem value="Educação">Educação</SelectItem>
+              <SelectItem value="Saúde">Saúde</SelectItem>
+              <SelectItem value="Alimentação">Alimentação</SelectItem>
+              <SelectItem value="Meio Ambiente">Meio Ambiente</SelectItem>
+              <SelectItem value="Assistência Social">Assistência Social</SelectItem>
+              <SelectItem value="Animais">Animais</SelectItem>
             </SelectContent>
           </Select>
 
-          <Select>
+          <Select value={selectedLocation} onValueChange={setSelectedLocation}>
             <SelectTrigger className="md:w-48">
               <SelectValue placeholder="Localização" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todo o Brasil</SelectItem>
-              <SelectItem value="sp">São Paulo</SelectItem>
-              <SelectItem value="rj">Rio de Janeiro</SelectItem>
-              <SelectItem value="mg">Minas Gerais</SelectItem>
-              <SelectItem value="rs">Rio Grande do Sul</SelectItem>
-              <SelectItem value="pr">Paraná</SelectItem>
+              <SelectItem value="São Paulo">São Paulo</SelectItem>
+              <SelectItem value="Rio de Janeiro">Rio de Janeiro</SelectItem>
+              <SelectItem value="Minas Gerais">Minas Gerais</SelectItem>
+              <SelectItem value="Brasília">Brasília</SelectItem>
+              <SelectItem value="Curitiba">Curitiba</SelectItem>
+              <SelectItem value="Salvador">Salvador</SelectItem>
+              <SelectItem value="Manaus">Manaus</SelectItem>
+              <SelectItem value="Fortaleza">Fortaleza</SelectItem>
+              <SelectItem value="Recife">Recife</SelectItem>
             </SelectContent>
           </Select>
 
@@ -140,24 +220,46 @@ const NGOGrid = () => {
           </Button>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {mockNGOs.map((ngo, index) => (
-            <div key={index} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-              <NGOCard {...ngo} />
-            </div>
-          ))}
+        {/* Results Count */}
+        <div className="mb-6 text-sm text-muted-foreground">
+          Mostrando {displayedNGOs.length} de {filteredNGOs.length} ONGs
         </div>
 
-        {/* Load More */}
-        <div className="text-center">
-          <Button variant="outline" size="lg">
-            Carregar Mais ONGs
-          </Button>
-        </div>
+        {/* Grid */}
+        {displayedNGOs.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {displayedNGOs.map((ngo, index) => (
+                <div key={ngo.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                  <NGOCard {...ngo} />
+                </div>
+              ))}
+            </div>
+
+            {/* Load More */}
+            {hasMore && (
+              <div className="text-center">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={() => setDisplayCount(displayCount + 6)}
+                >
+                  Carregar Mais ONGs
+                </Button>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-lg text-muted-foreground">
+              Nenhuma ONG encontrada com os filtros selecionados. Tente ajustar sua busca.
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
 };
 
 export default NGOGrid;
+
